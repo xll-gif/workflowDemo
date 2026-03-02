@@ -1,16 +1,17 @@
 import axios from 'axios';
-import { LoginRequest, LoginResponse, ForgotPasswordRequest, ForgotPasswordResponse } from '../types';
+import { LoginFormData, LoginResponse, ForgotPasswordParams, ApiResponse } from '../types';
 
-const api = axios.create({
+// 创建 Axios 实例
+const apiClient = axios.create({
   baseURL: '/api',
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
 // 请求拦截器
-api.interceptors.request.use(
+apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -24,28 +25,23 @@ api.interceptors.request.use(
 );
 
 // 响应拦截器
-api.interceptors.response.use(
-  (response) => response,
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
     return Promise.reject(error);
   }
 );
 
-// 登录接口
-export const login = async (data: LoginRequest): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>('/auth/login', data);
-  return response.data;
+// 登录 API
+export const login = (data: LoginFormData) => {
+  return apiClient.post<ApiResponse<LoginResponse>>('/auth/login', data);
 };
 
-// 忘记密码接口
-export const forgotPassword = async (data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
-  const response = await api.post<ForgotPasswordResponse>('/auth/forgot-password', data);
-  return response.data;
+// 忘记密码 API
+export const forgotPassword = (data: ForgotPasswordParams) => {
+  return apiClient.post<ApiResponse>('/auth/forgot-password', data);
 };
 
-export default api;
+export default apiClient;

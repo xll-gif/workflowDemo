@@ -1,28 +1,37 @@
-export interface LoginRequest {
+// 登录表单数据类型
+export interface LoginFormData {
   email: string;
   password: string;
 }
 
+// 登录成功响应
 export interface LoginResponse {
   token: string;
   user: {
     id: string;
     email: string;
     name: string;
-    avatar?: string;
   };
 }
 
-export interface ForgotPasswordRequest {
+// 忘记密码请求参数
+export interface ForgotPasswordParams {
   email: string;
 }
 
-export interface ForgotPasswordResponse {
-  success: boolean;
+// API 错误类型
+export interface ApiError<T = any> {
+  response?: {
+    data: T;
+    status: number;
+    headers: any;
+  };
   message: string;
 }
 
-export interface ApiError {
+// API 通用响应类型
+export interface ApiResponse<T = any> {
   code: number;
   message: string;
+  data: T;
 }

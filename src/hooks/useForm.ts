@@ -1,73 +1,60 @@
-import { useState } from 'react';
+import { useState, useCallback, ChangeEvent, FocusEvent } from 'react';
 
-interface UseFormOptions<T> {
+interface UseFormProps<T> {
   initialValues: T;
-  validations: Record<keyof T, (value: any) => string>;
+  validate: (values: T) => Partial<T>;
 }
 
-interface UseFormReturn<T> {
-  values: T;
-  errors: Record<keyof T, string>;
-  handleChange: (field: keyof T, value: any) => void;
-  validateForm: () => boolean;
-  resetForm: () => void;
-}
-
-const useForm = <T extends Record<string, any>>(options: UseFormOptions<T>): UseFormReturn<T> => {
-  const { initialValues, validations } = options;
-  
+export const useForm = <T extends Record<string, any>>({
+  initialValues,
+  validate
+}: UseFormProps<T>) => {
   const [values, setValues] = useState<T>(initialValues);
-  const [errors, setErrors] = useState<Record<keyof T, string>>(
-    Object.keys(initialValues).reduce((acc, key) => {
-      acc[key as keyof T] = '';
-      return acc;
-    }, {} as Record<keyof T, string>)
-  );
+  const [errors, setErrors] = useState<Partial<T>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
 
-  const handleChange = (field: keyof T, value: any) => {
-    setValues(prev => ({ ...prev, [field]: value }));
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setValues(prev => ({ ...prev, [name]: value }));
+  }, []);
+
+  const handleBlur = useCallback((e: FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
     
     // 实时验证
-    if (validations[field]) {
-      const error = validations[field](value);
-      setErrors(prev => ({ ...prev, [field]: error }));
+    const validationErrors = validate(values);
+    setErrors(prev => ({ ...prev, [name]: validationErrors[name as keyof T] }));
+  }, [values, validate]);
+
+  const handleSubmit = useCallback((onSubmit: (values: T) => void) => (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const validationErrors = validate(values);
+    setErrors(validationErrors);
+    
+    // 标记所有字段为已触摸
+    const allTouched = Object.keys(values).reduce((acc, key) => {
+      acc[key as keyof T] = true;
+      return acc;
+    }, {} as Partial<Record<keyof T, boolean>>);
+    setTouched(allTouched);
+    
+    // 如果没有错误则提交
+    if (Object.keys(validationErrors).length === 0) {
+      onSubmit(values);
     }
-  };
+  }, [values, validate]);
 
-  const validateForm = (): boolean => {
-    let isValid = true;
-    const newErrors = { ...errors };
-
-    Object.keys(validations).forEach((field) => {
-      const fieldKey = field as keyof T;
-      const error = validations[fieldKey](values[fieldKey]);
-      newErrors[fieldKey] = error;
-      if (error) {
-        isValid = false;
-      }
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const resetForm = () => {
-    setValues(initialValues);
-    setErrors(
-      Object.keys(initialValues).reduce((acc, key) => {
-        acc[key as keyof T] = '';
-        return acc;
-      }, {} as Record<keyof T, string>)
-    );
-  };
+  const isValid = Object.keys(errors).length === 0;
 
   return {
     values,
     errors,
+    touched,
     handleChange,
-    validateForm,
-    resetForm
+    handleBlur,
+    handleSubmit,
+    isValid
   };
 };
-
-export default useForm;

@@ -1,156 +1,150 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
-import useForm from '../../hooks/useForm';
+import { useForm } from '../../hooks/useForm';
 import { login, forgotPassword } from '../../services/api';
-import { LoginRequest } from '../../types';
-import logo from '@assets/logo.png?raw';
+import { LoginFormData, ApiError } from '../../types';
+import Button from '../ui/Button';
+import Input from '../ui/Input';
+import logo from '@assets/logo.png';
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { values, errors, handleChange, validateForm } = useForm<LoginRequest>({
-    initialValues: {
-      email: '',
-      password: ''
-    },
-    validations: {
-      email: (value) => {
-        if (!value) return '请输入邮箱';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return '请输入有效的邮箱地址';
-        return '';
-      },
-      password: (value) => {
-        if (!value) return '请输入密码';
-        if (value.length < 6) return '密码长度不能少于6位';
-        return '';
-      }
+  const initialValues: LoginFormData = {
+    email: '',
+    password: ''
+  };
+
+  const validate = (values: LoginFormData) => {
+    const errors: Partial<LoginFormData> = {};
+    
+    if (!values.email) {
+      errors.email = '请输入邮箱';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+      errors.email = '请输入有效的邮箱地址';
     }
+    
+    if (!values.password) {
+      errors.password = '请输入密码';
+    } else if (values.password.length < 6) {
+      errors.password = '密码长度不能少于6位';
+    }
+    
+    return errors;
+  };
+
+  const { values, errors, touched, handleChange, handleBlur, handleSubmit, isValid } = useForm({
+    initialValues,
+    validate
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!validateForm()) return;
-
-    setLoading(true);
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      const response = await login(values);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message || '登录失败，请检查邮箱和密码是否正确');
+      const response = await login(data);
+      localStorage.setItem('token', response.data.data.token);
+      window.location.href = '/dashboard';
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.response?.data?.message || '登录失败，请检查邮箱和密码是否正确');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const handleForgotPassword = async () => {
+  const handleForgotPassword = () => {
     if (!values.email) {
       setError('请先输入邮箱地址');
       return;
     }
-
-    const emailError = errors.email;
-    if (emailError) {
-      setError(emailError);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await forgotPassword({ email: values.email });
-      alert('重置密码邮件已发送到您的邮箱，请查收');
-    } catch (err: any) {
-      setError(err.response?.data?.message || '发送失败，请稍后重试');
-    } finally {
-      setLoading(false);
-    }
+    forgotPassword({ email: values.email })
+      .then(() => {
+        alert('重置密码邮件已发送到您的邮箱');
+      })
+      .catch(() => {
+        setError('发送重置邮件失败，请稍后重试');
+      });
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <img src={`data:image/svg+xml;base64,${btoa(logo)}`} alt="Logo" className="w-[100px] h-[100px] object-contain" />
-        </div>
+    <div className="w-full max-w-md mx-auto flex flex-col items-center space-y-8">
+      {/* 品牌Logo */}
+      <img 
+        src={logo} 
+        alt="品牌标识" 
+        className="w-24 h-24 object-contain mb-4"
+      />
+      
+      {/* 标题区域 */}
+      <div className="text-center space-y-2 w-full">
+        <h1 className="text-2xl font-bold text-gray-900">欢迎回来</h1>
+        <p className="text-gray-500">请登录您的账户以继续</p>
+      </div>
 
-        {/* 标题 */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">欢迎回来</h1>
-          <p className="text-gray-500">登录您的账户继续使用服务</p>
-        </div>
-
-        {/* 表单 */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {/* 登录表单 */}
+      <form 
+        onSubmit={handleSubmit(onSubmit)} 
+        className="w-full space-y-6"
+      >
+        {/* 邮箱输入框 */}
+        <div className="space-y-1">
           <Input
             type="email"
+            name="email"
             placeholder="请输入邮箱"
             value={values.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            error={errors.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.email ? errors.email : undefined}
             className="w-full"
-            disabled={loading}
-            autoComplete="username"
           />
+        </div>
 
+        {/* 密码输入框 */}
+        <div className="space-y-1">
           <Input
-            type={showPassword ? 'text' : 'password'}
+            type="password"
+            name="password"
             placeholder="请输入密码"
             value={values.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-            error={errors.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.password ? errors.password : undefined}
+            showPasswordToggle
             className="w-full"
-            disabled={loading}
-            autoComplete="current-password"
-            suffix={
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-gray-400 hover:text-gray-600 focus:outline-none"
-              >
-                {showPassword ? '👁️' : '🙈'}
-              </button>
-            }
           />
+        </div>
 
-          {/* 错误提示 */}
-          {error && (
-            <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
-              {error}
-            </div>
-          )}
-
-          {/* 忘记密码链接 */}
-          <div className="text-right">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              className="text-sm text-blue-500 hover:text-blue-600 focus:outline-none"
-              disabled={loading}
-            >
-              忘记密码？
-            </button>
-          </div>
-
-          {/* 登录按钮 */}
-          <Button
-            type="submit"
-            className="w-full h-10"
-            loading={loading}
-            disabled={loading}
+        {/* 忘记密码链接 */}
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-sm text-blue-500 hover:text-blue-600 transition-colors"
           >
-            登录
-          </Button>
-        </form>
-      </div>
+            忘记密码？
+          </button>
+        </div>
+
+        {/* 错误提示 */}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* 登录按钮 */}
+        <Button
+          type="submit"
+          disabled={!isValid || isLoading}
+          loading={isLoading}
+          className="w-full h-10"
+        >
+          登录
+        </Button>
+      </form>
     </div>
   );
 };
