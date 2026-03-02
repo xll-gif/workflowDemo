@@ -1,0 +1,46 @@
+{
+  "token": "mg_03992ef8773c4a75902b337bf0e2c208",
+  "base_url": "https://api.mastergo.cn/openapi",
+  "default_export_format": "png",
+  "default_scales": [1, 2, 3],
+  "timeout": 30,
+  "component_mappings": {
+    "button": {
+      "keywords": ["button", "btn", "submit", "action"],
+      "default_variant": "primary"
+    },
+    "input": {
+      "keywords": ["input", "field", "textbox", "entry"],
+      "default_placeholder": "Please enter text"
+    },
+    "text": {
+      "keywords": ["text", "label", "title", "heading"],
+      "default_variant": "body"
+    },
+    "image": {
+      "keywords": ["image", "img", "picture", "photo"],
+      "default_format": "png"
+    },
+    "icon": {
+      "keywords": ["icon", "svg", "vector"],
+      "default_format": "svg"
+    },
+    "card": {
+      "keywords": ["card", "panel", "box"],
+      "default_padding": 16
+    },
+    "list": {
+      "keywords": ["list", "items", "collection"],
+      "default_spacing": 8
+    }
+  },
+  "color_mappings": {
+    "primary": "#007AFF",
+    "secondary": "#5AC8FA",
+    "success": "#34C759",
+    "warning": "#FF9500",
+    "error": "#FF3B30",
+    "background": "#FFFFFF",
+    "text": "#000000"
+  }
+}

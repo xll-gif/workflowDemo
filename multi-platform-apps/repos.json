@@ -1,0 +1,90 @@
+{
+  "organization": "xll-gif",
+  "base_url": "https://github.com/xll-gif",
+  "repositories": [
+    {
+      "name": "ios-login-app",
+      "url": "https://github.com/xll-gif/ios-login-app.git",
+      "clone_url": "https://github.com/xll-gif/ios-login-app.git",
+      "platform": "iOS",
+      "language": "Swift",
+      "framework": "SwiftUI",
+      "min_version": "iOS 15.0",
+      "architecture": "MVVM",
+      "status": "initialized"
+    },
+    {
+      "name": "android-login-app",
+      "url": "https://github.com/xll-gif/android-login-app.git",
+      "clone_url": "https://github.com/xll-gif/android-login-app.git",
+      "platform": "Android",
+      "language": "Kotlin",
+      "framework": "Jetpack Compose",
+      "min_version": "API 24 (Android 7.0)",
+      "architecture": "MVVM",
+      "status": "initialized"
+    },
+    {
+      "name": "harmonyos-login-app",
+      "url": "https://github.com/xll-gif/harmonyos-login-app.git",
+      "clone_url": "https://github.com/xll-gif/harmonyos-login-app.git",
+      "platform": "HarmonyOS",
+      "language": "ArkTS",
+      "framework": "ArkUI",
+      "min_version": "API 9 (HarmonyOS 3.0)",
+      "architecture": "MVVM",
+      "status": "initialized"
+    },
+    {
+      "name": "h5-login-app",
+      "url": "https://github.com/xll-gif/h5-login-app.git",
+      "clone_url": "https://github.com/xll-gif/h5-login-app.git",
+      "platform": "H5",
+      "language": "TypeScript",
+      "framework": "React 18",
+      "build_tool": "Vite",
+      "architecture": "MVC",
+      "status": "initialized"
+    },
+    {
+      "name": "miniprogram-login-app",
+      "url": "https://github.com/xll-gif/miniprogram-login-app.git",
+      "clone_url": "https://github.com/xll-gif/miniprogram-login-app.git",
+      "platform": "Miniprogram",
+      "language": "JavaScript",
+      "framework": "WeChat Native",
+      "min_version": "2.20.0",
+      "architecture": "MVP",
+      "status": "initialized"
+    }
+  ],
+  "component_mapping": {
+    "common_button": {
+      "ios": "Button",
+      "android": "Button",
+      "harmonyos": "Button",
+      "h5": "Button",
+      "miniprogram": "button"
+    },
+    "common_input": {
+      "ios": "TextField",
+      "android": "TextField",
+      "harmonyos": "TextInput",
+      "h5": "Input",
+      "miniprogram": "input"
+    },
+    "common_image": {
+      "ios": "Image",
+      "android": "AsyncImage",
+      "harmonyos": "Image",
+      "h5": "img",
+      "miniprogram": "image"
+    }
+  },
+  "metadata": {
+    "created_at": "2026-02-27",
+    "created_by": "workflow",
+    "description": "多端登录应用仓库配置",
+    "version": "1.0.0"
+  }
+}
